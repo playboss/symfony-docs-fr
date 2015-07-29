@@ -418,25 +418,22 @@ Ensuite, créez un contrôleur qui va afficher le formulaire de connexion::
     namespace Acme\SecurityBundle\Controller;
 
     use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-    use Symfony\Component\Security\Core\SecurityContext;
 
     class SecurityController extends Controller
     {
         public function loginAction()
         {
-            $request = $this->getRequest();
-            $session = $request->getSession();
-            // get the login error if there is one
-            if ($request->attributes->has(SecurityContext::AUTHENTICATION_ERROR)) {
-                $error = $request->attributes->get(SecurityContext::AUTHENTICATION_ERROR);
-            } else {
-                $error = $session->get(SecurityContext::AUTHENTICATION_ERROR);
-                $session->remove(SecurityContext::AUTHENTICATION_ERROR);
-            }
+            // Si l'utilisateur est authentifié
+            if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+	        return $this->redirect('home');
+	    }
+	
+	    $authenticationUtils = $this->get('security.authentication_utils');
+	    
             return $this->render('AcmeSecurityBundle:Security:login.html.twig', array(
                 // last username entered by the user
-                'last_username' => $session->get(SecurityContext::LAST_USERNAME),
-                'error'         => $error,
+                'last_username' => $authenticationUtils->getLastUsername(),
+                'error'         => $authenticationUtils->getLastAuthenticationError(),
             ));
         }
     }
